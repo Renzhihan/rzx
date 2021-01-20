@@ -187,3 +187,41 @@ vector<T> v5 = { a , b , c }
 
 
 
+# 第五章 语句
+
+## 1.try语句块和异常处理
+
+```c++
+try{
+	//
+}catch( exception-declaration ){
+	//
+}catch( exception-declaration ){
+	//
+}//...
+```
+
+try后紧跟一个块，跟在try块后的是一个或多个catch子句，catch子句包含三部分：关键字catch、括号内一个（可能未命名）对象的声明（称作异常声明）、以及一个块。
+
+# 函数
+
+## 1. 函数基础
+
+局部静态对象在程序的执行路径第一次经过对象定义语句时初始化，直到程序终止才销毁。
+
+如果没有显式的初始值，它将执行值初始化，内置类型的局部静态变量初始化为0
+
+
+
+## 2. 参数传递
+
+**不能把const对象、字面值或者是需要类型转换的对象传递给普通的引用形参**
+
+```c++
+//若将find_char函数第一个参数定义为普通引用
+string::size_type find_char(string &s , char c , string::size_type &occurs);
+//则此写法错误
+find_char("hello world" , 'o' , ctr);
+
+```
+
