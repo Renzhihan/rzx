@@ -1,0 +1,3 @@
+/home/robo105/rzx/learncmake/CMakeFiles/rebuild_cache.dir
+/home/robo105/rzx/learncmake/CMakeFiles/edit_cache.dir
+/home/robo105/rzx/learncmake/CMakeFiles/main.dir
