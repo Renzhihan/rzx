@@ -14,4 +14,5 @@ Purewind
 
 ## 2021.1.20
 
-学习C++Primer第二章及第三章，简单了解cmake。继续学习运用git
+学习C++Primer第二章及第三章，学习使用cmake，继续学习运用git。
+
