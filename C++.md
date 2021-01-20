@@ -93,3 +93,97 @@ pv = pd ;
 
 
 **指向常量的指针也没有规定其所指的对象必须是一个常量，仅要求不能通过该指针改变对象的值，而没有规定不能通过其他途经改变**
+
+### 顶层const
+
+用名词顶层const表示指针本身是一个常量，而用底层const表示指针所指的对象是一个常量
+
+```c++
+int i = 0 ;
+int *const p1 = &i ; //不能改变p1的值，这是顶层const
+const int ci = 42 ; //不能改变ci的值，这是顶层const
+const int * p2 = &ci ; //可以改变p2，这是底层const
+const int *const p3 = p2 ; //右边的是顶层const，左边的是底层const
+const int &r = ci ; //用于声明的const都是底层const
+```
+
+## 5.处理类型
+
+**auto一般会忽略顶层const，保留底层const**
+
+```c++
+const int ci = i , &cr = ci ;
+auto b = ci; //b是一个整数
+auto c = cr; //c是一个整数
+auto d = &i; //d是一个整型指针
+auto e = &ci;//e是一个指向整数常量的指针（对常量对象取地址是一种底层const）
+
+const auto f = ci; //f是const int
+```
+
+
+
+### decltype类型指示符
+
+decltype的作用是选择并返回操作数的数据类型，但并不执行此函数
+
+```c++
+decltype(f()) sum = x ;
+```
+
+**如果decltype使用的表达式不是一个变量，则decltype返回表达式结果对应的类型**
+
+```c++
+int i = 42 , *p = &i , &r = i;
+decltype( r + 0 ) b; // b是一个int
+decltype(*p) c ; // 错误，c是int&，引用必须初始化
+```
+
+
+
+**如果变量名加上一对或多对括号，则结果与不加括号时结果不同，编译器将会把他当作一个表达式，此是会得到引用类型**
+
+decltype((i))的结果永远是引用，而decltype(i)的结果只有当i是引用时才会是引用。
+
+## 自定义数据结构
+
+
+
+# 第三章 字符串、向量和数组
+
+## 1. 命名空间的using声明
+
+
+
+## 2. 标准库类型string
+
+string::size_type是一个无符号类型的值
+
+size函数返回的是一个无符号整型数，因此不能在表达式中混用带符号数和size
+
+处理一个string对象中的每个字符
+
+```c++
+string  str("hello world");
+for( auto c : str )
+	cout << c << endl;
+```
+
+## 3. 标准库类型vector
+
+```c++
+vector<T> v1 
+//下面两行含义相同：v2中包含了v1所有元素的副本
+vector<T> v2 (v1)
+vector<T> v2 = v1 
+//v3包含了n个元素，每个元素的值都是val
+vector<T> v3 ( n , val )
+//v4包含n个重复的值初始化的对象
+vector<T> v4 ( n )
+//下面两行含义相同： v5 包含了初始值个数的元素，每个元素被赋予相应的初始值
+vector<T> v5 { a , b , c }
+vector<T> v5 = { a , b , c }
+```
+
+
+
