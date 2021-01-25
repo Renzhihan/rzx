@@ -7,7 +7,6 @@ import random
 import sys
 import threading
 import time
-
 import cv2
 import numpy as np
 import pycuda.autoinit
@@ -27,6 +26,25 @@ ctypes.CDLL(PLUGIN_LIBRARY)
 engine_file_path = "build/yolov5s.engine"
 
 categories = ["blue","red","front","back","left","rights","tracking"]
+#1-blue 2-red
+enemy_color=1
+
+def select_target(box_list, cls_list, score_list, ENEMY_COLOR):
+        '''select enemy bbox and get enemy direction
+        '''
+    for box, cls, score in zip(box_list, cls_list, score_list):
+        tmp_armor_score = 0
+        if cls == ENEMY_COLOR and score > tmp_armor_score:
+            mp_armor_score = score
+            armor_box = box
+    for box, cls, score in zip(box_list, cls_list, score_list):
+        tmp_direc_score = 0
+        if cls >=3 and score > tmp_direc_score:
+            if box[0] < armor_box[0] and box[2] > armor_box[2]:
+                direction = [box, cls]
+    return armor_box, direction
+
+
 
 def plot_one_box(x, img, color=None, label=None, line_thickness=None):
     """
@@ -66,13 +84,21 @@ def plot_one_box(x, img, color=None, label=None, line_thickness=None):
         print('box: (%d,%d), (%d,%d) ' %(c1[0],c1[1],c2[0],c2[1]))
 
 
-class YoLov5TRT(object):
+class Detector(object):
     """
     description: A YOLOv5 class that warps TensorRT ops, preprocess and postprocess ops.
     """
 
-    def __init__(self, engine_file_path):
-        # Create a Context on this device,
+    def __init__(self, engine_file_path,detecting, tracking, initracker, boundingbox, image_in, direction, ENEMY_COLOR):
+        # Create a Context on this device
+
+
+        self.detecting   = detecting
+        self.tracking    = tracking
+        self.initracker  = initracker
+        self.boundingbox = boundingbox
+        self.image_in    = image_in
+        self.direction   = direction
         self.cfx = cuda.Device(0).make_context()
         stream = cuda.Stream()
         TRT_LOGGER = trt.Logger(trt.Logger.INFO)
@@ -162,13 +188,11 @@ class YoLov5TRT(object):
                 ),
             )
         cv2.imshow("video",image_raw)
-        #if cv2.waitKey(1) == ord('q'):  # q to quit
-            #cv2.destroyAllWindows()
-        #parent, filename = os.path.split(input_image_path)
-        #save_name = os.path.join(parent, "output_" + filename)
-        # 　Save image
-        #cv2.imwrite(save_name, image_raw)
-        return result_boxes, result_classid, result_scores
+        box, direc = select_target(result_boxes, result_scores, result_classid, enemy_color)
+        boundingbox[:] = [box[1], box[0], box[3]-box[1], box[2]-box[0]] 
+
+
+        #return result_boxes, result_classid, result_scores
 
     def destroy(self):
         # Remove any context from the top of the context stack, deactivating it.

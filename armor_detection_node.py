@@ -74,11 +74,6 @@ class ArmorDetectionNode():
             #rospy.sleep(0.005) # 200Hz frequency
 
 
-    def _update_ctrlpower(self, ctrlpower_msg):
-        '''decision node callback
-        '''
-        self.can_ctrl = ctrlpower_msg.data
-
     def _set_fricwhl(can_start):
         '''fricwheel service client
         '''
@@ -119,8 +114,6 @@ class ArmorDetectionNode():
             return [pitch, yaw]
 
 
-
-
 def select_target(box_list, cls_list, score_list, ENEMY_COLOR):
         '''select enemy bbox and get enemy direction
         '''
@@ -140,8 +133,8 @@ def select_target(box_list, cls_list, score_list, ENEMY_COLOR):
 
 if __name__=='__main__':
     #1-blue 2-red
-    enemy_color=1
-    yolov5_wrapper = YoLov5TRT("build/yolov5s.engine")
+    ENEMY_COLOR=1
+    
     detecting   = Value(c_bool, True)
     initracker  = Value(c_bool, False)
     tracking    = Value(c_bool, False)
@@ -151,7 +144,8 @@ if __name__=='__main__':
     # xmin,ymin,width,height
     boundingbox = Array('I', [0, 0, 0, 0]) # unsigned int bbox
 
-
+    yolov5_wrapper = YoLov5TRT("build/yolov5s.engine",detecting, tracking, initracker, 
+                        boundingbox, direction, image_in, ENEMY_COLOR)
     device_manager = gx.DeviceManager() 
     dev_num, dev_info_list = device_manager.update_device_list()
     if dev_num == 0:
@@ -167,17 +161,14 @@ if __name__=='__main__':
         rgb1_image = raw1_image.convert("RGB")
         numpy1_image = rgb1_image.get_numpy_array()
         image_raw = cv2.cvtColor(numpy1_image, cv2.COLOR_RGB2BGR)
-
-    #for input_image_path in input_image_paths:
-        # create a new thread to do inference
-        #thread1 = myThread(yolov5_wrapper.infer, [image_raw])
-        #thread1.start()
-        #thread1.join()
-        box_list, cls_list, score_list=yolov5_wrapper.infer(image_raw)
-		box, direc = select_target(box_list, cls_list, score_list, enemy_color)
-        boundingbox[:] = [box[1], box[0], box[3]-box[1], box[2]-box[0]] 
+        yolov5_wrapper.infer(image_raw)
+        # box_list, cls_list, score_list=yolov5_wrapper.infer(image_raw)
+		# box, direc = select_target(box_list, cls_list, score_list, enemy_color)
+        # boundingbox[:] = [box[1], box[0], box[3]-box[1], box[2]-box[0]] 
 
 
+
+        armor_detection_node = ArmorDetectionNode()
         t2 = time.clock()
         print('Done. (%.3fs)' % (t2 - t1))
         if cv2.waitKey(1) == ord('q'): 
@@ -186,7 +177,7 @@ if __name__=='__main__':
             cam.close_device()
             break
     cam.stream_off()
-    # destroy the instance
+
     yolov5_wrapper.destroy()
     #cam.stream_off()
     #cam.close_device()
